@@ -125,13 +125,17 @@ document.getElementById("btn1").addEventListener('click', () => {
             const delay = setInterval(() => {
                 if (meuSimbolo === 'X') {
                     status.textContent = "Aguardando adversário...";
+                    get(ref(db, `jogodavelha/${sala}/playerX`)).then(snapshot => {
+                        px = snapshot.val();
+                        if (px !== name) {
+                            location.href = `?sala=${sala}&nome=${name}`;
+                            alert("REINICIANDO");
+                        };
+                    });
                 }
                 get(ref(db, `jogodavelha/${sala}/playerO`)).then(snapshot1 => {
                     namead = snapshot1.val();
-                    if (namead === "<Error: null>" || !namead || !running) {
-                        document.getElementById("btn1").click();
-                        return;
-                    };
+                    if (namead === "<Error: null>" || !namead || !running) return;
                     get(ref(db, `jogodavelha/${sala}/turno`)).then(snapshot => {
                         const vez = snapshot.val();
                         podeJogar = (vez === meuSimbolo);
