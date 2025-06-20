@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Jogo da Velha Multiplayer</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="screen show menuinicial" id="screen-mi">
+        <h1>Jogo da Velha</h1>
+        <input type="text" placeholder="Nome..." id="name">
+        <input type="text" placeholder="Código..." id="code">
+        <button id="btn1">Entrar na Sala</button>
+        <button id="btn2">Entrar em uma sala aleatória</button>
+    </div>
+    <div class="screen" id="screen-tab">
+        <h1>Jogo da Velha</h1>
+        <div id="status">Carregando...</div>
+        <div class="tabuleiro" id="tabuleiro"></div>
+        <button class="revanche" id="revanche">Revanche</button>
+        <button class="voltar" id="voltar">Voltar</button>
+    </div>
+<script src="script.js" type="module"></script>
+</body>
+</html>
