@@ -46,13 +46,16 @@ document.getElementById("voltar").addEventListener('click', () => {
 document.getElementById("revanche").addEventListener('click', () => {
     try {
         if (revanche) return;
+        const randomNum = Math.floor(Math.random() * 2000) + 1;
         document.getElementById("revanche").classList.remove("show");
         revanche = true;
-        get(ref(db, `jogodavelha/${sala}/revanche`)).then(snapshot => {
-            const q = snapshot.val();
-            set(ref(db, `jogodavelha/${sala}/revanche`), q+1);
-            clearInterval(delay);
-        });
+        const delay = setInterval(() => {
+            get(ref(db, `jogodavelha/${sala}/revanche`)).then(snapshot => {
+                const q = snapshot.val();
+                set(ref(db, `jogodavelha/${sala}/revanche`), q+1);
+                clearInterval(delay);
+            });
+        }, randomNum);
     } catch (erro) {
         // console.error('Erro:', erro);
     }
@@ -122,16 +125,13 @@ document.getElementById("btn1").addEventListener('click', () => {
             const delay = setInterval(() => {
                 if (meuSimbolo === 'X') {
                     status.textContent = "Aguardando adversário...";
-                    get(ref(db, `jogodavelha/${sala}/playerX`)).then(snapshot2 => {
-                        const nomex = snapshot2.val();
-                        if (nomex !== name) {
-                            location.href = `?sala=${sala}&nome=${name}`;
-                        }
-                    });
                 }
                 get(ref(db, `jogodavelha/${sala}/playerO`)).then(snapshot1 => {
                     namead = snapshot1.val();
-                    if (namead === "<Error: null>" || !namead || !running) return;
+                    if (namead === "<Error: null>" || !namead || !running) {
+                        document.getElementById("btn1").click();
+                        return;
+                    };
                     get(ref(db, `jogodavelha/${sala}/turno`)).then(snapshot => {
                         const vez = snapshot.val();
                         podeJogar = (vez === meuSimbolo);
