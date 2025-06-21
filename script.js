@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, get, remove } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+import { getDatabase, ref, onValue, set, get, remove, runTransaction } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
 
 const firebaseConfig = {
@@ -46,18 +46,17 @@ document.getElementById("voltar").addEventListener('click', () => {
 document.getElementById("revanche").addEventListener('click', () => {
     try {
         if (revanche) return;
-        const randomNum = Math.floor(Math.random() * 2000) + 1;
+        const revancheRef = ref(db, `jogodavelha/${sala}/revanche`);
+        runTransaction(revancheRef, (valorAtual) => {
+            return (valorAtual || 0) + 1;
+        }).then((resultado) => {
+        }).catch((error) => {
+            console.log(error)
+        })
         document.getElementById("revanche").classList.remove("show");
         revanche = true;
-        const delay = setInterval(() => {
-            get(ref(db, `jogodavelha/${sala}/revanche`)).then(snapshot => {
-                const q = snapshot.val();
-                set(ref(db, `jogodavelha/${sala}/revanche`), q+1);
-                clearInterval(delay);
-            });
-        }, randomNum);
     } catch (erro) {
-        // console.error('Erro:', erro);
+        console.error('Erro:', erro);
     }
 });
 
@@ -69,6 +68,7 @@ document.getElementById("btn1").addEventListener('click', () => {
 
     sala = document.getElementById("code").value;
     name = document.getElementById("name").value;
+
     let namead = "";
     let meuSimbolo = '';
     let podeJogar = false;
@@ -90,10 +90,11 @@ document.getElementById("btn1").addEventListener('click', () => {
 
     get(ref(db, `jogodavelha/${sala}`)).then(snapshot => {
         const dados = snapshot.val();
+        const randomNum = Math.floor(Math.random() * 10) + 1;
         if (!dados) {
             set(ref(db, `jogodavelha/${sala}`), {
                 tabuleiro: Array(9).fill(''),
-                turno: 'X',
+                turno: randomNum < 5 ? 'X' : 'O',
                 playerX: name,
                 playerO: "<Error: null>",
                 revanche: 0,
@@ -126,10 +127,9 @@ document.getElementById("btn1").addEventListener('click', () => {
                 if (meuSimbolo === 'X') {
                     status.textContent = "Aguardando adversário...";
                     get(ref(db, `jogodavelha/${sala}/playerX`)).then(snapshot => {
-                        px = snapshot.val();
+                        const px = snapshot.val();
                         if (px !== name) {
                             location.href = `?sala=${sala}&nome=${name}`;
-                            alert("REINICIANDO");
                         };
                     });
                 }
@@ -147,10 +147,13 @@ document.getElementById("btn1").addEventListener('click', () => {
         });
     });
 
-    onValue(ref(db, `jogodavelha/${sala}/revanche`), snapshot => {
-        if (snapshot.val() === 2) {
-            remove(ref(db, `jogodavelha/${sala}`));
-            location.href = `?sala=${sala}&nome=${name}`;
+    onValue(ref(db, `jogodavelha/${sala}/revanche`), (snapshot) => {
+        const Revanche = snapshot.val() || 0;
+        if (Revanche >= 2) {
+            setTimeout(() => {
+                remove(ref(db, `jogodavelha/${sala}`));
+                location.href = `?sala=${sala}&nome=${name}`;
+            }, 1000);
         }
     });
 
